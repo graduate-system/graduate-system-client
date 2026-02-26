@@ -1,0 +1,34 @@
+# Node.js 24 LTS (Active LTS through April 2028)
+# Using bookworm-slim (Debian 12) for smaller, less vulnerable base image
+FROM node:24-bookworm-slim
+
+# Install create-next-app globally for scaffolding
+RUN npm install -g create-next-app@latest
+
+# Install Docker CLI for Docker-in-Docker scenarios
+# Uses Docker's official convenience script and installs latest security updates
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg2 \
+    lsb-release && \
+    curl -fsSL https://get.docker.com -o get-docker.sh && \
+    sh get-docker.sh && \
+    rm get-docker.sh && \
+    rm -rf /var/lib/apt/lists/*
+
+# Add node user to docker group for socket access
+RUN if getent group docker; then usermod -aG docker node; else groupadd docker && usermod -aG docker node; fi
+
+# Install Azure CLI (installs latest stable version)
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
+# Install GitHub CLI (installs latest stable version)
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt-get update \
+    && apt-get install gh -y
