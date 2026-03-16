@@ -1,15 +1,20 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import "./globals.css";
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  title: "Graduate System Client",
-  description: "Graduate system client built with Next.js 15 and TypeScript."
+  title: "GradTrack Analytics | Meru University of Science & Technology",
+  description:
+    "Graduate employability trends analytics platform for Meru University of Science and Technology — tracking employment rates, industry demand, and skill gaps.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={cn("font-sans", geist.variable)}>
       <body>{children}</body>
     </html>
   );
