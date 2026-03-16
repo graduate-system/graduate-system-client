@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 /* ── Verified Unsplash photo URLs ─────────────────────── */
 const IMG = {
@@ -43,7 +45,8 @@ export default function HomePage() {
               <li><a href="#how-it-works">How It Works</a></li>
               <li><a href="#graduates">Stories</a></li>
               <li><a href="#trends">Trends</a></li>
-              <li><a href="#dashboard" className="navbar-cta">Get Started</a></li>
+              <li><Link href="/register" className="navbar-cta">Submit Data</Link></li>
+              <li><ThemeToggle /></li>
             </ul>
           </nav>
         </div>
@@ -73,8 +76,8 @@ export default function HomePage() {
             </p>
 
             <div className="hero-actions">
-              <a href="#dashboard" className="btn-primary">Explore Dashboard →</a>
-              <a href="#how-it-works" className="btn-outline">How It Works</a>
+              <Link href="/register" className="btn-primary">🎓 I&apos;m a Graduate →</Link>
+              <a href="#dashboard" className="btn-outline">Committee Dashboard</a>
             </div>
 
             <div className="hero-stats">
@@ -475,11 +478,24 @@ export default function HomePage() {
             Join MUST career services, academic departments, and partner
             employers already using GradTrack to close the employability gap.
           </p>
-          <div className="cta-actions">
-            <a href="#dashboard" className="btn-primary">Launch Dashboard →</a>
-            <a href="mailto:careers@must.ac.ke" className="btn-outline">
-              Contact Career Services
-            </a>
+          {/* Role-based CTAs */}
+          <div className="role-cta-grid">
+            <div className="role-cta-card">
+              <div className="role-cta-icon">🎓</div>
+              <h3>I&apos;m a Graduate</h3>
+              <p>Submit your employment details and help build MUST&apos;s employability profile.</p>
+              <Link href="/register" className="btn-primary" style={{ marginTop: "auto" }}>
+                Submit My Data →
+              </Link>
+            </div>
+            <div className="role-cta-card">
+              <div className="role-cta-icon">📊</div>
+              <h3>School Committee</h3>
+              <p>Access analytics dashboards, reports, and graduate outcome trends by programme.</p>
+              <a href="/dashboard" className="btn-outline" style={{ marginTop: "auto" }}>
+                Open Dashboard →
+              </a>
+            </div>
           </div>
         </div>
       </section>
