@@ -2,16 +2,19 @@
 
 import { cookies } from "next/headers";
 
-const COMMITTEE_PIN = process.env.COMMITTEE_PIN || "123456";
 const COOKIE_NAME = "committee_auth";
 const COOKIE_MAX_AGE = 60 * 60 * 8; // 8 hours
+
+function getPin() {
+  return process.env.COMMITTEE_PIN || "123456";
+}
 
 export async function verifyPin(pin: string): Promise<{ success: boolean; error?: string }> {
   if (!pin || pin.trim().length === 0) {
     return { success: false, error: "Please enter the committee PIN." };
   }
 
-  if (pin.trim() !== COMMITTEE_PIN) {
+  if (pin.trim() !== getPin()) {
     return { success: false, error: "Incorrect PIN. Please try again." };
   }
 
@@ -35,4 +38,19 @@ export async function isAuthenticated(): Promise<boolean> {
 export async function logout(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete(COOKIE_NAME);
+}
+
+export async function changePin(
+  currentPin: string,
+  newPin: string,
+): Promise<{ success: boolean; error?: string }> {
+  if (currentPin.trim() !== getPin()) {
+    return { success: false, error: "Current PIN is incorrect." };
+  }
+  if (!newPin || newPin.trim().length < 4) {
+    return { success: false, error: "New PIN must be at least 4 characters." };
+  }
+  // In production you'd persist this — for now we update the env at runtime
+  process.env.COMMITTEE_PIN = newPin.trim();
+  return { success: true };
 }
