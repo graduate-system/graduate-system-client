@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { submitGraduate, type SubmitResult } from "@/lib/actions";
 import {
   MUST_SCHOOLS,
   KENYAN_COUNTIES,
@@ -128,6 +129,9 @@ function NativeSelect({
 export function GraduateForm() {
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submittedId, setSubmittedId] = useState<number | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const {
     register,
@@ -195,9 +199,61 @@ export function GraduateForm() {
     setStep((s) => s - 1);
   }
 
-  function onSubmit(data: FormData) {
-    console.log("Graduate submission:", data);
-    setSubmitted(true);
+  async function onSubmit(data: FormData) {
+    setSubmitError(null);
+    startTransition(async () => {
+      const result: SubmitResult = await submitGraduate({
+        full_name:         data.full_name,
+        student_number:    data.student_number || undefined,
+        email:             data.email || undefined,
+        phone:             data.phone || undefined,
+        campus:            data.campus,
+        school:            data.school,
+        department:        data.department,
+        programme:         data.programme,
+        graduation_year:   data.graduation_year,
+        employment_status: data.employment_status,
+        employer_name:     data.employer_name || undefined,
+        job_title:         data.job_title || undefined,
+        sector:            data.sector || undefined,
+        employment_county: data.employment_county || undefined,
+        months_to_employ:  data.months_to_employ || undefined,
+        linkedin_url:      data.linkedin_url || undefined,
+      });
+      if (result.success) {
+        setSubmittedId(result.id);
+        setSubmitted(true);
+      } else {
+        setSubmitError(result.error);
+      }
+    });
+  }
+
+  // Validate ALL steps before native submit; jump to first failing step
+  async function handleFormSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitError(null);
+    for (let i = 0; i < stepFields.length; i++) {
+      const valid = await trigger(stepFields[i]);
+      if (!valid) {
+        setStep(i);
+        return;
+      }
+    }
+    // All steps valid — also run the full schema (catches .refine cross-field rules)
+    handleSubmit(
+      onSubmit,
+      (fieldErrors) => {
+        // Cross-field validation failed — find which step has the error
+        const errorKeys = Object.keys(fieldErrors) as (keyof FormData)[];
+        for (let i = 0; i < stepFields.length; i++) {
+          if (stepFields[i].some((f) => errorKeys.includes(f))) {
+            setStep(i);
+            return;
+          }
+        }
+      },
+    )();
   }
 
   if (submitted) {
@@ -214,7 +270,7 @@ export function GraduateForm() {
             graduates.
           </p>
           <Badge className="mt-2 bg-green-700 text-white px-4 py-1 text-sm">
-            Submission Reference: MUST-{Date.now().toString(36).toUpperCase()}
+            Submission ID: #{submittedId}
           </Badge>
           <Button
             variant="outline"
@@ -232,7 +288,7 @@ export function GraduateForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form onSubmit={handleFormSubmit} noValidate>
       {/* Progress bar */}
       <div className="mb-8 space-y-3">
         <div className="flex items-center justify-between">
@@ -635,6 +691,13 @@ export function GraduateForm() {
         </Card>
       )}
 
+      {/* Submit error */}
+      {submitError && (
+        <div className="mt-4 rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+          <strong>Submission failed:</strong> {submitError}
+        </div>
+      )}
+
       {/* Navigation buttons */}
       <div className="mt-6 flex items-center justify-between gap-4">
         <Button
@@ -659,9 +722,10 @@ export function GraduateForm() {
           ) : (
             <Button
               type="submit"
+              disabled={isPending}
               className="gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-bold px-8"
             >
-              🎓 Submit My Details
+              {isPending ? "Submitting…" : "🎓 Submit My Details"}
             </Button>
           )}
         </div>
