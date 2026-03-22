@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -232,15 +233,15 @@ export default function HomePage() {
               { value: "340+",    label: "Partner Employers" },
               { value: "18",      label: "Degree Programmes Covered" },
             ].map((s, i, arr) => (
-              <>
-                <div key={s.label} className="stat-item">
+              <Fragment key={s.label}>
+                <div className="stat-item">
                   <strong>{s.value}</strong>
                   <span>{s.label}</span>
                 </div>
                 {i < arr.length - 1 && (
-                  <div key={`div-${i}`} className="stat-divider" />
+                  <div className="stat-divider" />
                 )}
-              </>
+              </Fragment>
             ))}
           </div>
         </div>

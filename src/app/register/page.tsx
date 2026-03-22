@@ -50,13 +50,13 @@ export default function RegisterPage() {
         </p>
         {/* Progress steps */}
         <div className="mx-auto mt-8 flex max-w-lg items-center justify-center gap-2">
-          {["Personal Info", "Academic Details", "Employment", "Skills"].map((s, i) => (
+          {["Personal Info", "Academic Details", "Employment"].map((s, i, arr) => (
             <div key={s} className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-400/20 text-xs font-bold text-amber-300 ring-1 ring-amber-400/40">
                 {i + 1}
               </div>
               <span className="hidden text-xs text-green-200/60 sm:block">{s}</span>
-              {i < 3 && <div className="h-px w-6 bg-white/15" />}
+              {i < arr.length - 1 && <div className="h-px w-6 bg-white/15" />}
             </div>
           ))}
         </div>
